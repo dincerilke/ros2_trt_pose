@@ -75,7 +75,7 @@ WORKDIR /
 #
 COPY jetson-ota-public.asc /etc/apt/trusted.gpg.d/jetson-ota-public.asc
 
-RUN echo "deb https://repo.download.nvidia.com/jetson/common r32.4 main" > /etc/apt/sources.list.d/nvidia-l4t-apt-source.list && \
+RUN echo "deb [trusted=yes] https://repo.download.nvidia.com/jetson/common r32.4 main" > /etc/apt/sources.list.d/nvidia-l4t-apt-source.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
             libopencv-python \
@@ -140,11 +140,22 @@ RUN apt-get update && \
 		  zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone -b ${TORCHVISION_VERSION} https://github.com/pytorch/vision torchvision && \
-    cd torchvision && \
-    python3 setup.py install && \
-    cd ../ && \
-    rm -rf torchvision
+RUN python3 -m pip install torch==1.6.0
+
+RUN wget https://github.com/pytorch/vision/archive/refs/tags/${TORCHVISION_VERSION}.tar.gz \
+    && tar -xvf ${TORCHVISION_VERSION}.tar.gz \
+    && rm ${TORCHVISION_VERSION}.tar.gz 
+RUN cd vision-0.7.0 \
+    && python3 setup.py install \
+    && cd ../.. \
+    && rm -rf ${TORCHVISION_VERSION}
+    
+
+# RUN git clone -b ${TORCHVISION_VERSION} https://github.com/pytorch/vision torchvision && \
+#     cd torchvision && \
+#     python3 setup.py install && \
+#     cd ../ && \
+#     rm -rf torchvision
 
 # 
 # PyCUDA
